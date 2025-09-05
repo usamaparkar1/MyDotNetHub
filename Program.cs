@@ -1,7 +1,24 @@
+using MyDotNetHub.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowIonic", policy =>
+    {
+        policy.WithOrigins("http://localhost:8100")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -14,7 +31,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// 👇 THIS MUST COME BEFORE `MapControllers`
+app.UseCors("AllowIonic");
 app.UseHttpsRedirection();
+app.MapControllers();
 
 var summaries = new[]
 {
