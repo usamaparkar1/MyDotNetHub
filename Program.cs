@@ -3,6 +3,16 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+string? applicationInsightsConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+// Add Application Insights telemetry
+builder.Services.AddApplicationInsightsTelemetry(options =>
+{
+    options.ConnectionString = applicationInsightsConnectionString;
+});
+
+// All ILogger<T> logs will now appear in App Insights automatically.
+builder.Logging.AddApplicationInsights();
+
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Register CORS policy
@@ -11,8 +21,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowIonic", policy =>
     {
         policy.WithOrigins("http://localhost:8100")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
